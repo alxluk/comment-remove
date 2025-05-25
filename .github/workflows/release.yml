@@ -12,19 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
 
       - name: Build binary
-        run: cargo build --release
+        run: |
+          make  # Или gcc -o comment-remove src/*.c
+          chmod +x comment-remove
 
       - name: Install packaging tools
         run: |
-          sudo apt-get update
           sudo apt-get install -y rpm ruby ruby-dev
           sudo gem install fpm
 
@@ -32,7 +31,7 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           mkdir -p debian/usr/bin
-          cp target/release/comment-remove debian/usr/bin/
+          cp comment-remove debian/usr/bin/
           fpm -s dir -t deb \
             -n comment-remove \
             -v $VERSION \
@@ -40,13 +39,14 @@ jobs:
             --prefix / \
             --architecture native \
             --deb-compression xz \
-            --depends "libc6, diffutils"
+            --depends "libc6, diffutils" \
+            --package "comment-remove_${VERSION}_amd64.deb"
 
       - name: Create RPM package
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           mkdir -p rpmbuild/usr/bin
-          cp target/release/comment-remove rpmbuild/usr/bin/
+          cp comment-remove rpmbuild/usr/bin/
           fpm -s dir -t rpm \
             -n comment-remove \
             -v $VERSION \
@@ -54,13 +54,14 @@ jobs:
             --prefix / \
             --architecture native \
             --rpm-compression xz \
-            --depends "glibc, diffutils"
+            --depends "glibc, diffutils" \
+            --package "comment-remove-${VERSION}-1.x86_64.rpm"
 
       - name: Create PKGBUILD
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           cat > PKGBUILD <<EOL
-          # Maintainer: alxluk <sash.luk.2311@email.com>
+          # Maintainer: alxluk <sash.luk.2311@gmail.com>
           pkgname=comment-remove
           pkgver=$VERSION
           pkgrel=1
@@ -69,17 +70,22 @@ jobs:
           url="https://github.com/alxluk/comment-remove"
           license=('MIT')
           depends=('glibc' 'diffutils')
-          source=("https://github.com/alxluk/comment-remove/releases/download/v\$pkgver/comment-remove-\$pkgver-linux-x86_64.tar.gz")
+          source=("https://github.com/alxluk/comment-remove/releases/download/v\$pkgver/comment-remove-\$pkgver-x86_64.tar.gz")
           sha256sums=('SKIP')
 
           build() {
-            tar xzf comment-remove-\$pkgver-linux-x86_64.tar.gz
+            tar xzf comment-remove-\$pkgver-x86_64.tar.gz
           }
 
           package() {
             install -Dm755 comment-remove -t "\$pkgdir/usr/bin/"
           }
           EOL
+
+      - name: Create source tarball
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          tar czf comment-remove-${VERSION}-x86_64.tar.gz comment-remove
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
@@ -88,5 +94,6 @@ jobs:
             *.deb
             *.rpm
             PKGBUILD
+            *.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
