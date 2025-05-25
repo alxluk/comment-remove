@@ -16,37 +16,49 @@ typedef struct {
 } LangRules;
 
 const LangRules languages[] = {
-    {  
+    {
         .single_line = "//",
         .multi_start = "/*",
         .multi_end = "*/",
         .extensions = {".c", ".h", ".cpp", ".hpp", ".cs", ".java", ".js", NULL}
     },
-    {  
-        .single_line = "#",
-        .multi_start = "'''",
-        .multi_end = "'''",
-        .extensions = {".py", NULL}
-    },
-    {  
+    {
         .single_line = "#",
         .multi_start = "",
         .multi_end = "",
-        .extensions = {".sh", ".pl", ".rb", ".bash", NULL}
+        .extensions = {".py", NULL}
     },
-    {  
+    {
+        .single_line = "#",
+        .multi_start = "",
+        .multi_end = "",
+        .extensions = {".sh", ".bash", NULL}
+    },
+    {
+        .single_line = "#",
+        .multi_start = "=begin",
+        .multi_end = "=end",
+        .extensions = {".rb", NULL}
+    },
+    {
+        .single_line = "#",
+        .multi_start = "=pod",
+        .multi_end = "=cut",
+        .extensions = {".pl", NULL}
+    },
+    {
         .single_line = "",
         .multi_start = "<!--",
         .multi_end = "-->",
         .extensions = {".html", ".htm", ".xml", ".xhtml", NULL}
     },
-    {  
+    {
         .single_line = "",
         .multi_start = "/*",
         .multi_end = "*/",
         .extensions = {".css", NULL}
     },
-    {  
+    {
         .single_line = "//",
         .multi_start = "/*",
         .multi_end = "*/",
