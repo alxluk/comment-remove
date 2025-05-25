@@ -16,11 +16,8 @@
 | PHP          | `.php`                     |
 
 ## Установка
-1. **Сборка с помощью Makefile**
-```bash
-make all
-```
-2. Зависимости
+
+1. Зависимости
 Убедитесь, что установлены:
 `diffutils` (для сравнения файлов)
 ```bash
@@ -32,7 +29,10 @@ sudo yum install diffutils  # RHEL/CentOS
 ```bash
 sudo pacman -S diffutils  # Arch/Manjaro
 ```
-
+2. **Сборка с помощью Makefile**
+```bash
+make all
+```
 ### Использование
 ```bash
 ./comment-remove <путь_к_файлу>
