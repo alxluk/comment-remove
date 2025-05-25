@@ -8,7 +8,7 @@
 ## Поддерживаемые языки
 | Язык         | Расширения                  |
 |--------------|----------------------------|
-| C/C++/Java/JS| `.c`, `.h`, `.cpp`, `.hpp` |
+| C/C++/Java/JS| `.c`, `.h`, `.cpp`, `.hpp` `.java`, `.js`|
 | Python       | `.py`                      |
 | Shell        | `.sh`, `.pl`, `.rb`, `.bash`|
 | HTML/XML     | `.html`, `.htm`, `.xml`    |
@@ -18,7 +18,7 @@
 ## Установка
 1. **Сборка с помощью Makefile**
 ```bash
-   make all
+make all
 ```
 2. Зависимости
 Убедитесь, что установлены:
@@ -30,7 +30,7 @@ sudo apt install diffutils  # Debian/Ubuntu
 sudo yum install diffutils  # RHEL/CentOS
 ```
 ```bash
-sudo pacman -S diffutils # Arch/Manjaro
+sudo pacman -S diffutils  # Arch/Manjaro
 ```
 
 ### Использование
