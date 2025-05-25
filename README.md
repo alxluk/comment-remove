@@ -38,7 +38,7 @@ make all
 ```
 Пример:
 ```bash
-./comment-remove example.c
+./comment-remove ./examples/example.c
 ```
 Что происходит после запуска?
 1. Создаётся копия файла с суффиксом _1 (например: example_1.c)
