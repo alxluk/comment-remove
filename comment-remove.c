@@ -224,9 +224,10 @@ int main(int argc, char *argv[]) {
     fclose(out);
 
     char diff_cmd[DIFF_CMD_SIZE];
-    snprintf(diff_cmd, sizeof(diff_cmd),
-            "diff -u --color=always \"%s\" \"%s\"", input_file, output_file);
-    (void)system(diff_cmd);
+        snprintf(diff_cmd, sizeof(diff_cmd),
+                "diff -u --color=always \"%s\" \"%s\"", input_file, output_file);
+        int unused = system(diff_cmd);
+        (void)unused;
 
     printf("\nReplace original file? [Y/n] ");
     char choice = 'n';
