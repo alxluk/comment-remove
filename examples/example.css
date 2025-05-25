@@ -1,0 +1,8 @@
+/* Single-line comment in CSS */
+/*
+Multi-line comment in CSS.
+It can span multiple lines.
+*/
+body {
+    font-size: 16px;
+}
