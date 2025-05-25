@@ -8,9 +8,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install build dependencies
         run: |
@@ -42,7 +47,7 @@ jobs:
             --deb-compression xz \
             --depends "libc6, diffutils" \
             --package "comment-remove_${VERSION}_amd64.deb"
-          ls *.deb
+          ls -l *.deb
 
       - name: Create RPM package
         run: |
@@ -58,13 +63,17 @@ jobs:
             --rpm-compression xz \
             --depends "glibc, diffutils" \
             --package "comment-remove-${VERSION}-1.x86_64.rpm"
-          ls *.rpm
+          ls -l *.rpm
 
-      - name: Create PKGBUILD
+      - name: Prepare Arch package
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          cat > PKGBUILD <<EOL
-          # Maintainer: alxluk <sash.luk.2311@gmail.com>
+          mkdir -p pkgbuild
+          cp comment-remove pkgbuild/
+
+
+          cat > pkgbuild/PKGBUILD <<EOL
+          Maintainer: alxluk <sash.luk.2311@gmail.com>
           pkgname=comment-remove
           pkgver=$VERSION
           pkgrel=1
@@ -73,28 +82,30 @@ jobs:
           url="https://github.com/alxluk/comment-remove"
           license=('MIT')
           depends=('glibc' 'diffutils')
-          source=("https://github.com/alxluk/comment-remove/releases/download/v\$pkgver/comment-remove-\$pkgver-x86_64.tar.gz")
-          sha256sums=('SKIP')
 
           package() {
             install -Dm755 comment-remove -t "\$pkgdir/usr/bin/"
           }
           EOL
-          cat PKGBUILD
 
-      - name: Create source tarball
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          tar czf comment-remove-${VERSION}-x86_64.tar.gz comment-remove
-          ls *.tar.gz
+
+          cd pkgbuild
+          makepkg --printsrcinfo > .SRCINFO
+          cd ..
+
+
+          tar czf comment-remove-${VERSION}.arch.tar.gz -C pkgbuild .
+          ls -l *.arch.tar.gz
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
+        if: success()
         with:
           files: |
             *.deb
             *.rpm
-            PKGBUILD
-            *.tar.gz
+            *.arch.tar.gz
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
