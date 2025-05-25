@@ -109,43 +109,68 @@ int main(int argc, char *argv[]) {
     }
 
     fseek(in, 0, SEEK_END);
-    long len = ftell(in);
+    long file_len = ftell(in);
+    if (file_len == -1) {
+        perror("Error determining file length");
+        fclose(in);
+        return 1;
+    }
     fseek(in, 0, SEEK_SET);
 
-    char *buffer = malloc(len + 1);
+    size_t buffer_size = (size_t)file_len;
+    char *buffer = malloc(buffer_size + 1);
     if (!buffer) {
         perror("Memory allocation failed");
         fclose(in);
         return 1;
     }
 
-    fread(buffer, 1, len, in);
-    buffer[len] = '\0';
+    size_t bytes_read = fread(buffer, 1, buffer_size, in);
+    if (bytes_read != buffer_size) {
+        if (ferror(in)) {
+            perror("Error reading input file");
+        } else {
+            fprintf(stderr, "Error: Could not read the entire file\n");
+        }
+        free(buffer);
+        fclose(in);
+        return 1;
+    }
+    buffer[bytes_read] = '\0';
     fclose(in);
 
-    char *output = malloc(len + 1);
-    int output_len = 0;
+    char *output = malloc(buffer_size + 1);
+    size_t output_len = 0;
     bool comments_found = false;
     bool in_comment = false;
     bool in_string = false;
     bool in_char = false;
     bool escape = false;
 
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < bytes_read; i++) {
         if (!in_comment && !in_string && !in_char) {
-            if (rules->multi_start[0] != '\0' &&
-                strncmp(&buffer[i], rules->multi_start, strlen(rules->multi_start)) == 0) {
+            size_t multi_start_len = strlen(rules->multi_start);
+            if (multi_start_len > 0 &&
+                i + multi_start_len <= bytes_read &&
+                strncmp(&buffer[i], rules->multi_start, multi_start_len) == 0) {
                 in_comment = true;
                 comments_found = true;
-                i += strlen(rules->multi_start) - 1;
+                i += multi_start_len - 1; // -1 because loop increments i
                 continue;
             }
 
-            if (rules->single_line[0] != '\0' &&
-                strncmp(&buffer[i], rules->single_line, strlen(rules->single_line)) == 0) {
+            size_t single_line_len = strlen(rules->single_line);
+            if (single_line_len > 0 &&
+                i + single_line_len <= bytes_read &&
+                strncmp(&buffer[i], rules->single_line, single_line_len) == 0) {
                 comments_found = true;
-                while (i < len && buffer[i] != '\n') i++;
-                if (i < len) output[output_len++] = buffer[i];
+                // Skip to end of line
+                while (i < bytes_read && buffer[i] != '\n') {
+                    i++;
+                }
+                if (i < bytes_read) {
+                    output[output_len++] = buffer[i];
+                }
                 continue;
             }
         }
@@ -153,8 +178,7 @@ int main(int argc, char *argv[]) {
         if (!in_comment && !escape) {
             if (buffer[i] == '"' && !in_char) {
                 in_string = !in_string;
-            }
-            else if (buffer[i] == '\'' && !in_string) {
+            } else if (buffer[i] == '\'' && !in_string) {
                 in_char = !in_char;
             }
         }
@@ -169,10 +193,14 @@ int main(int argc, char *argv[]) {
             output[output_len++] = buffer[i];
         }
 
-        if (in_comment && rules->multi_end[0] != '\0' &&
-            strncmp(&buffer[i], rules->multi_end, strlen(rules->multi_end)) == 0) {
-            in_comment = false;
-            i += strlen(rules->multi_end) - 1;
+        if (in_comment) {
+            size_t multi_end_len = strlen(rules->multi_end);
+            if (multi_end_len > 0 &&
+                i + multi_end_len <= bytes_read &&
+                strncmp(&buffer[i], rules->multi_end, multi_end_len) == 0) {
+                in_comment = false;
+                i += multi_end_len - 1; // -1 because loop increments i
+            }
         }
     }
 
@@ -198,11 +226,14 @@ int main(int argc, char *argv[]) {
     char diff_cmd[DIFF_CMD_SIZE];
     snprintf(diff_cmd, sizeof(diff_cmd),
             "diff -u --color=always \"%s\" \"%s\"", input_file, output_file);
-    system(diff_cmd);
+    (void)system(diff_cmd);
 
     printf("\nReplace original file? [Y/n] ");
-    char choice;
-    scanf(" %c", &choice);
+    char choice = 'n';
+    int result = scanf(" %c", &choice);
+    if (result != 1) {
+        choice = 'n';
+    }
 
     if (tolower(choice) == 'y' || choice == '\n') {
         if (remove(input_file) != 0) {
