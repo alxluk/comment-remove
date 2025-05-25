@@ -1,5 +1,7 @@
 # comment-remove
 
+[![Build Status](https://github.com/alxluk/comment-remove/actions/workflows/makefile.yml/badge.svg)](https://github.com/alxluk/comment-remove/actions)
+
 Утилита для удаления комментариев из исходных файлов на разных языках программирования
 
 ## Описание
