@@ -40,6 +40,8 @@ make all
 ```
 Пример:
 ```bash
+## Примеры использования
+./comment-remove ./examples/example.py
 ./comment-remove ./examples/example.c
 ```
 Что происходит после запуска?
