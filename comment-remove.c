@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
                 strncmp(&buffer[i], rules->multi_start, multi_start_len) == 0) {
                 in_comment = true;
                 comments_found = true;
-                i += multi_start_len - 1; // -1 because loop increments i
+                i += multi_start_len - 1; 
                 continue;
             }
 
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
                 i + single_line_len <= bytes_read &&
                 strncmp(&buffer[i], rules->single_line, single_line_len) == 0) {
                 comments_found = true;
-                // Skip to end of line
+                
                 while (i < bytes_read && buffer[i] != '\n') {
                     i++;
                 }
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
                 i + multi_end_len <= bytes_read &&
                 strncmp(&buffer[i], rules->multi_end, multi_end_len) == 0) {
                 in_comment = false;
-                i += multi_end_len - 1; // -1 because loop increments i
+                i += multi_end_len - 1; 
             }
         }
     }
