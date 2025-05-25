@@ -19,8 +19,9 @@ jobs:
 
       - name: Build binary
         run: |
-          make  # Или gcc -o comment-remove src/*.c
+          make
           chmod +x comment-remove
+          ls -lah comment-remove
 
       - name: Install packaging tools
         run: |
@@ -37,10 +38,11 @@ jobs:
             -v $VERSION \
             -C debian \
             --prefix / \
-            --architecture native \
+            --architecture amd64 \
             --deb-compression xz \
             --depends "libc6, diffutils" \
             --package "comment-remove_${VERSION}_amd64.deb"
+          ls *.deb
 
       - name: Create RPM package
         run: |
@@ -52,10 +54,11 @@ jobs:
             -v $VERSION \
             -C rpmbuild \
             --prefix / \
-            --architecture native \
+            --architecture x86_64 \
             --rpm-compression xz \
             --depends "glibc, diffutils" \
             --package "comment-remove-${VERSION}-1.x86_64.rpm"
+          ls *.rpm
 
       - name: Create PKGBUILD
         run: |
@@ -73,19 +76,17 @@ jobs:
           source=("https://github.com/alxluk/comment-remove/releases/download/v\$pkgver/comment-remove-\$pkgver-x86_64.tar.gz")
           sha256sums=('SKIP')
 
-          build() {
-            tar xzf comment-remove-\$pkgver-x86_64.tar.gz
-          }
-
           package() {
             install -Dm755 comment-remove -t "\$pkgdir/usr/bin/"
           }
           EOL
+          cat PKGBUILD
 
       - name: Create source tarball
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           tar czf comment-remove-${VERSION}-x86_64.tar.gz comment-remove
+          ls *.tar.gz
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
