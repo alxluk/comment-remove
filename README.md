@@ -17,9 +17,8 @@
 
 ## Установка
 
-1. Зависимости
-Убедитесь, что установлены:
-`diffutils` (для сравнения файлов)
+### 1. Зависимости
+Убедитесь что установлены: `diffutils` (для сравнения файлов)
 ```bash
 sudo apt install diffutils  # Debian/Ubuntu
 ```
@@ -29,11 +28,11 @@ sudo yum install diffutils  # RHEL/CentOS
 ```bash
 sudo pacman -S diffutils  # Arch/Manjaro
 ```
-2. **Сборка с помощью Makefile**
+### 2. **Сборка с помощью Makefile**
 ```bash
 make all
 ```
-### Использование
+### 3. Использование
 ```bash
 ./comment-remove <путь_к_файлу>
 ```
