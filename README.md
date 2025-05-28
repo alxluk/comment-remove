@@ -43,6 +43,7 @@ make all
 ## Примеры использования
 ./comment-remove ./examples/example.py
 ./comment-remove ./examples/example.c
+./comment-remove -y ./examples/example.xml
 ```
 Что происходит после запуска?
 1. Создаётся копия файла с суффиксом _1 (например: example_1.c)
