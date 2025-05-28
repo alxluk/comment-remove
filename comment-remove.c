@@ -81,12 +81,20 @@ const LangRules* detect_language(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+    if (argc != 2 && argc != 3) {
+        fprintf(stderr, "Usage: %s [<filename>|-y <filename>]\n", argv[0]);
         return 1;
     }
 
-    const char *input_file = argv[1];
+    const char *input_file = NULL;
+
+    
+    if (argc == 3 && strcmp(argv[1], "-y") == 0) {
+        input_file = argv[2];
+    } else {
+        input_file = argv[1];
+    }
+
     const LangRules *rules = detect_language(input_file);
     if (!rules) {
         fprintf(stderr, "Unsupported file type\n");
@@ -155,7 +163,7 @@ int main(int argc, char *argv[]) {
                 strncmp(&buffer[i], rules->multi_start, multi_start_len) == 0) {
                 in_comment = true;
                 comments_found = true;
-                i += multi_start_len - 1; 
+                i += multi_start_len - 1;
                 continue;
             }
 
@@ -164,7 +172,7 @@ int main(int argc, char *argv[]) {
                 i + single_line_len <= bytes_read &&
                 strncmp(&buffer[i], rules->single_line, single_line_len) == 0) {
                 comments_found = true;
-                
+
                 while (i < bytes_read && buffer[i] != '\n') {
                     i++;
                 }
@@ -199,7 +207,7 @@ int main(int argc, char *argv[]) {
                 i + multi_end_len <= bytes_read &&
                 strncmp(&buffer[i], rules->multi_end, multi_end_len) == 0) {
                 in_comment = false;
-                i += multi_end_len - 1; 
+                i += multi_end_len - 1;
             }
         }
     }
@@ -224,31 +232,40 @@ int main(int argc, char *argv[]) {
     fclose(out);
 
     char diff_cmd[DIFF_CMD_SIZE];
-        snprintf(diff_cmd, sizeof(diff_cmd),
-                "diff -u --color=always \"%s\" \"%s\"", input_file, output_file);
-        int unused = system(diff_cmd);
-        (void)unused;
+    snprintf(diff_cmd, sizeof(diff_cmd),
+            "diff -u --color=always \"%s\" \"%s\"", input_file, output_file);
+    int unused = system(diff_cmd);
+    (void)unused;
 
-    printf("\nReplace original file? [Y/n] ");
-    char choice = 'n';
-    int result = scanf(" %c", &choice);
-    if (result != 1) {
-        choice = 'n';
-    }
-
-    if (tolower(choice) == 'y' || choice == '\n') {
+    if (argc == 3 && strcmp(argv[1], "-y") == 0) {
+        printf("Automatically replacing file.\n");
         if (remove(input_file) != 0) {
             perror("Error removing original file");
         } else if (rename(output_file, input_file) != 0) {
             perror("Error renaming file");
-        } else {
-            printf("File successfully replaced.\n");
         }
     } else {
-        if (remove(output_file) == 0) {
-            printf("Temporary file removed: %s\n", output_file);
+        printf("\nReplace original file? [Y/n] ");
+        char choice = 'n';
+        int result = scanf(" %c", &choice);
+        if (result != 1) {
+            choice = 'n';
+        }
+
+        if (tolower(choice) == 'y' || choice == '\n') {
+            if (remove(input_file) != 0) {
+                perror("Error removing original file");
+            } else if (rename(output_file, input_file) != 0) {
+                perror("Error renaming file");
+            } else {
+                printf("File successfully replaced.\n");
+            }
         } else {
-            perror("Error removing temporary file");
+            if (remove(output_file) == 0) {
+                printf("Temporary file removed: %s\n", output_file);
+            } else {
+                perror("Error removing temporary file");
+            }
         }
     }
 
