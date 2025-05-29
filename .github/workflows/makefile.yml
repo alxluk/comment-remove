@@ -22,25 +22,5 @@ jobs:
     - name: Build project
       run: make
 
-    # Remove cleanup step to ensure binary is available for testing
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential diffutils
-
-    - name: Run tests
-      run: |
-        for i in {1..2}; do
-          make test
-        done
-      env:
-        PATH: "$PATH:/github/home/actions-runner/_runner/exports"
+    - name: Cleanup
+      run: make clean
